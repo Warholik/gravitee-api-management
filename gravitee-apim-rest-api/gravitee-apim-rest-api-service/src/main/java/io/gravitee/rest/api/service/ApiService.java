@@ -169,4 +169,6 @@ public interface ApiService {
 
     void addGroup(String api, String group);
     void removeGroup(String api, String group);
+
+    Map<String, List<GroupMemberEntity>> getGroupsWithMembers(String apiId) throws TechnicalManagementException;
 }

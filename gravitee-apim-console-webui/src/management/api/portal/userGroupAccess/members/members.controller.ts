@@ -52,18 +52,11 @@ class ApiMembersController {
     });
     this.groupMembers = {};
     this.groupIdsWithMembers = [];
-    if (this.api.groups) {
-      _.forEach(this.api.groups, (grp) => {
-        GroupService.getMembers(grp).then((members) => {
-          const filteredMembers = _.filter(members.data, (m: any) => {
-            return m.roles.API;
-          });
 
-          if (filteredMembers.length > 0) {
-            this.groupMembers[grp] = filteredMembers;
-            this.groupIdsWithMembers.push(grp);
-          }
-        });
+    if (this.api.groups) {
+      ApiService.getGroupsWithMembers(this.api.id).then(({ data: groupsWithMembers }) => {
+        this.groupMembers = groupsWithMembers;
+        this.groupIdsWithMembers = Object.keys(groupsWithMembers);
       });
     }
 

@@ -726,6 +726,11 @@ public class ApiResource extends AbstractResource {
         return resourceContext.getResource(ApiMembersResource.class);
     }
 
+    @Path("groups")
+    public ApiGroupsResource getApiGroupsResource() {
+        return resourceContext.getResource(ApiGroupsResource.class);
+    }
+
     @Path("analytics")
     public ApiAnalyticsResource getApiAnalyticsResource() {
         return resourceContext.getResource(ApiAnalyticsResource.class);
