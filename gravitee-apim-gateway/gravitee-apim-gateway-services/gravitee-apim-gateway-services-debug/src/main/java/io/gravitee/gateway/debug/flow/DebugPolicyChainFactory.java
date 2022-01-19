@@ -13,52 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.gateway.flow.policy;
+package io.gravitee.gateway.debug.flow;
 
 import io.gravitee.gateway.api.ExecutionContext;
 import io.gravitee.gateway.api.buffer.Buffer;
 import io.gravitee.gateway.core.processor.StreamableProcessor;
+import io.gravitee.gateway.debug.policy.impl.DebugPolicy;
+import io.gravitee.gateway.flow.policy.PolicyChainFactory;
+import io.gravitee.gateway.flow.policy.PolicyResolver;
 import io.gravitee.gateway.policy.NoOpPolicyChain;
 import io.gravitee.gateway.policy.Policy;
 import io.gravitee.gateway.policy.PolicyManager;
 import io.gravitee.gateway.policy.StreamType;
-import io.gravitee.gateway.policy.impl.OrderedPolicyChain;
-import io.gravitee.gateway.policy.impl.ReversedPolicyChain;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * A factory of {@link io.gravitee.policy.api.PolicyChain}.
- *
- * @author David BRASSELY (david.brassely at graviteesource.com)
+ * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class PolicyChainFactory {
+public class DebugPolicyChainFactory extends PolicyChainFactory {
 
-    protected final PolicyManager policyManager;
-
-    public PolicyChainFactory(final PolicyManager policyManager) {
-        this.policyManager = policyManager;
+    public DebugPolicyChainFactory(PolicyManager policyManager) {
+        super(policyManager);
     }
 
-    public StreamableProcessor<ExecutionContext, Buffer> create(
-        final List<PolicyResolver.Policy> resolvedPolicies,
-        final StreamType streamType,
-        final ExecutionContext context
-    ) {
-        return create(
-            resolvedPolicies,
-            streamType,
-            context,
-            policies ->
-                streamType == StreamType.ON_REQUEST
-                    ? OrderedPolicyChain.create(policies, context)
-                    : ReversedPolicyChain.create(policies, context)
-        );
-    }
-
+    @Override
     public StreamableProcessor<ExecutionContext, Buffer> create(
         List<PolicyResolver.Policy> resolvedPolicies,
         StreamType streamType,
@@ -71,7 +53,13 @@ public class PolicyChainFactory {
 
         final List<Policy> policies = resolvedPolicies
             .stream()
-            .map(policy -> policyManager.create(streamType, policy.getName(), policy.getConfiguration(), policy.getCondition()))
+            .map(
+                policy ->
+                    new DebugPolicy(
+                        streamType,
+                        policyManager.create(streamType, policy.getName(), policy.getConfiguration(), policy.getCondition())
+                    )
+            )
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 

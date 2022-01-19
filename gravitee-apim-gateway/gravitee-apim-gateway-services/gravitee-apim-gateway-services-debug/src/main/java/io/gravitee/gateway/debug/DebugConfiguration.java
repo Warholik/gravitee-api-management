@@ -15,6 +15,7 @@
  */
 package io.gravitee.gateway.debug;
 
+import io.gravitee.gateway.debug.flow.DebugPolicyChainFactory;
 import io.gravitee.gateway.debug.vertx.VertxDebugService;
 import io.gravitee.gateway.handlers.api.ApiContextHandlerFactory;
 import io.gravitee.gateway.handlers.api.definition.Api;
@@ -57,7 +58,10 @@ public class DebugConfiguration {
     @Bean
     @Qualifier("debugReactorHandlerFactory")
     public ReactorHandlerFactory<Api> reactorHandlerFactory() {
-        return new ApiContextHandlerFactory(applicationContext.getParent(), configuration, node);
+        return new ApiContextHandlerFactory(applicationContext.getParent(), configuration,
+            node,
+            DebugPolicyChainFactory::new
+        );
     }
 
     @Bean

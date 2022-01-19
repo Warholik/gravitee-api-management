@@ -63,6 +63,7 @@ import io.gravitee.plugin.resource.ResourceClassLoaderFactory;
 import io.gravitee.plugin.resource.ResourcePlugin;
 import io.gravitee.resource.api.ResourceManager;
 import io.vertx.core.Vertx;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -83,11 +84,27 @@ public class ApiContextHandlerFactory implements ReactorHandlerFactory<Api> {
     private ApplicationContext applicationContext;
     private Configuration configuration;
     private final Node node;
+    private final Function<PolicyManager, PolicyChainFactory> policyChainFactoryCreator;
 
     public ApiContextHandlerFactory(ApplicationContext applicationContext, Configuration configuration, Node node) {
+        this(
+            applicationContext,
+            configuration,
+            node,
+            PolicyChainFactory::new
+        );
+    }
+
+    public ApiContextHandlerFactory(
+        ApplicationContext applicationContext,
+        Configuration configuration,
+        Node node,
+        Function<PolicyManager, PolicyChainFactory> policyChainFactoryCreator
+    ) {
         this.applicationContext = applicationContext;
         this.configuration = configuration;
         this.node = node;
+        this.policyChainFactoryCreator = policyChainFactoryCreator;
     }
 
     @Override
@@ -127,7 +144,7 @@ public class ApiContextHandlerFactory implements ReactorHandlerFactory<Api> {
                     apiComponentProvider
                 );
 
-                final PolicyChainFactory policyChainFactory = policyChainFactory(policyManager);
+                final PolicyChainFactory policyChainFactory = policyChainFactoryCreator.apply(policyManager);
                 final RequestProcessorChainFactory requestProcessorChainFactory = requestProcessorChainFactory(
                     api,
                     policyChainFactory,
@@ -185,10 +202,6 @@ public class ApiContextHandlerFactory implements ReactorHandlerFactory<Api> {
         }
 
         return null;
-    }
-
-    public PolicyChainFactory policyChainFactory(PolicyManager policyManager) {
-        return new PolicyChainFactory(policyManager);
     }
 
     public PolicyManager policyManager(
