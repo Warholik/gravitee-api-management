@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  */
 public class PolicyChainFactory {
 
-    protected final PolicyManager policyManager;
+    private final PolicyManager policyManager;
 
     public PolicyChainFactory(final PolicyManager policyManager) {
         this.policyManager = policyManager;

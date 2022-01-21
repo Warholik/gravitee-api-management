@@ -47,13 +47,11 @@ public class DebugPolicy implements Policy {
 
     @Override
     public void execute(PolicyChain chain, ExecutionContext context) throws PolicyException {
-        LOGGER.debug("Before execute() for {}", streamType);
         policy.execute(chain, context);
     }
 
     @Override
     public ReadWriteStream<Buffer> stream(PolicyChain chain, ExecutionContext context) throws PolicyException {
-        LOGGER.debug("Before stream() for {}", streamType);
         return policy.stream(chain, context);
     }
 
