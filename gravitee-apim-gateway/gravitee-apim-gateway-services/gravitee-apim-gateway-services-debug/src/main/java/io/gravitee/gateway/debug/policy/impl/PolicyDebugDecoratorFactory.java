@@ -26,11 +26,11 @@ import java.util.Objects;
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class DebugPolicyFactory implements PolicyFactory {
+public class PolicyDebugDecoratorFactory implements PolicyFactory {
 
     private final PolicyFactory delegate;
 
-    public DebugPolicyFactory(PolicyFactory delegate) {
+    public PolicyDebugDecoratorFactory(PolicyFactory delegate) {
         Objects.requireNonNull(delegate, "PolicyFactory delegate is mandatory");
 
         this.delegate = delegate;
@@ -38,12 +38,12 @@ public class DebugPolicyFactory implements PolicyFactory {
 
     @Override
     public Policy create(StreamType streamType, PolicyMetadata policyMetadata, PolicyConfiguration policyConfiguration) {
-        return new DebugPolicy(streamType, delegate.create(streamType, policyMetadata, policyConfiguration));
+        return new PolicyDebugDecorator(streamType, delegate.create(streamType, policyMetadata, policyConfiguration));
     }
 
     @Override
     public Policy create(StreamType streamType, PolicyMetadata policyMetadata, PolicyConfiguration policyConfiguration, String condition) {
-        return new DebugPolicy(streamType, delegate.create(streamType, policyMetadata, policyConfiguration, condition));
+        return new PolicyDebugDecorator(streamType, delegate.create(streamType, policyMetadata, policyConfiguration, condition));
     }
 
     @Override

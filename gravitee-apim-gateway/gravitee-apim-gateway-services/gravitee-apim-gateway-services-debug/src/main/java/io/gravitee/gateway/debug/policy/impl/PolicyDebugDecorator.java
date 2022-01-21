@@ -29,13 +29,12 @@ import org.slf4j.LoggerFactory;
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class DebugPolicy implements Policy {
+public class PolicyDebugDecorator implements Policy {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(DebugPolicy.class);
     private final StreamType streamType;
     private final Policy policy;
 
-    public DebugPolicy(StreamType streamType, Policy policy) {
+    public PolicyDebugDecorator(StreamType streamType, Policy policy) {
         this.streamType = streamType;
         this.policy = policy;
     }

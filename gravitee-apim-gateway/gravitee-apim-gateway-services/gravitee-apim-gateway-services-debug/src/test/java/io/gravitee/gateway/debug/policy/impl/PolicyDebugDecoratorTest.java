@@ -27,6 +27,7 @@ import static org.reflections.ReflectionUtils.withModifier;
 import io.gravitee.gateway.api.ExecutionContext;
 import io.gravitee.gateway.api.Request;
 import io.gravitee.gateway.api.Response;
+import io.gravitee.gateway.core.condition.ExpressionLanguageStringConditionEvaluator;
 import io.gravitee.gateway.debug.policy.DummyPolicy;
 import io.gravitee.gateway.policy.PolicyFactory;
 import io.gravitee.gateway.policy.PolicyMetadata;
@@ -55,7 +56,7 @@ import org.reflections.ReflectionUtils;
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class DebugPolicyTest {
+public class PolicyDebugDecoratorTest {
 
     @Mock
     private PolicyPluginFactory policyPluginFactory;
@@ -77,7 +78,12 @@ public class DebugPolicyTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        policyFactory = spy(new DebugPolicyFactory(new PolicyFactoryImpl(policyPluginFactory)));
+        policyFactory =
+            spy(
+                new PolicyDebugDecoratorFactory(
+                    new PolicyFactoryImpl(policyPluginFactory, new ExpressionLanguageStringConditionEvaluator())
+                )
+            );
 
         when(context.request()).thenReturn(request);
         when(context.response()).thenReturn(response);

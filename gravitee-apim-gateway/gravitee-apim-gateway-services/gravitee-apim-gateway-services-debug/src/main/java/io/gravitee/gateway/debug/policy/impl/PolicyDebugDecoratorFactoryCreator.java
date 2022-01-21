@@ -18,19 +18,18 @@ package io.gravitee.gateway.debug.policy.impl;
 import io.gravitee.gateway.policy.PolicyFactory;
 import io.gravitee.gateway.policy.PolicyFactoryCreator;
 import java.util.Objects;
-import org.springframework.beans.factory.FactoryBean;
 
-public class DebugPolicyFactoryCreator implements PolicyFactoryCreator {
+public class PolicyDebugDecoratorFactoryCreator implements PolicyFactoryCreator {
 
     private final PolicyFactoryCreator delegate;
 
-    public DebugPolicyFactoryCreator(PolicyFactoryCreator delegate) {
+    public PolicyDebugDecoratorFactoryCreator(PolicyFactoryCreator delegate) {
         Objects.requireNonNull(delegate, "PolicyFactoryCreator delegate is mandatory");
         this.delegate = delegate;
     }
 
     @Override
     public PolicyFactory create() {
-        return new DebugPolicyFactory(delegate.create());
+        return new PolicyDebugDecoratorFactory(delegate.create());
     }
 }

@@ -17,7 +17,8 @@ package io.gravitee.gateway.debug;
 
 import io.gravitee.gateway.core.classloader.DefaultClassLoader;
 import io.gravitee.gateway.core.component.ComponentProvider;
-import io.gravitee.gateway.debug.policy.impl.DebugPolicyFactoryCreator;
+import io.gravitee.gateway.core.condition.ExpressionLanguageStringConditionEvaluator;
+import io.gravitee.gateway.debug.policy.impl.PolicyDebugDecoratorFactoryCreator;
 import io.gravitee.gateway.debug.vertx.VertxDebugService;
 import io.gravitee.gateway.handlers.api.ApiContextHandlerFactory;
 import io.gravitee.gateway.handlers.api.definition.Api;
@@ -70,7 +71,9 @@ public class DebugConfiguration {
     @Bean
     @Qualifier("debugPolicyFactoryCreator")
     public PolicyFactoryCreator debugPolicyFactoryCreator(final PolicyPluginFactory policyPluginFactory) {
-        return new DebugPolicyFactoryCreator(new PolicyFactoryCreatorImpl(configuration, policyPluginFactory));
+        return new PolicyDebugDecoratorFactoryCreator(
+            new PolicyFactoryCreatorImpl(configuration, policyPluginFactory, new ExpressionLanguageStringConditionEvaluator())
+        );
     }
 
     @Bean
