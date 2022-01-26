@@ -2877,6 +2877,7 @@ public class ApiServiceImpl extends AbstractService implements ApiService {
     private Api convert(String apiId, UpdateApiEntity updateApiEntity, String apiDefinition) {
         Api api = new Api();
         api.setId(apiId);
+        api.setCrossId(updateApiEntity.getCrossId());
         if (updateApiEntity.getVisibility() != null) {
             api.setVisibility(Visibility.valueOf(updateApiEntity.getVisibility().toString()));
         }

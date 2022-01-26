@@ -270,7 +270,7 @@ public class PageServiceImpl extends AbstractService implements PageService, App
 
     private static Page convert(UpdatePageEntity updatePageEntity) {
         Page page = new Page();
-
+        page.setCrossId(updatePageEntity.getCrossId());
         page.setName(updatePageEntity.getName());
         page.setContent(updatePageEntity.getContent());
         page.setLastContributor(updatePageEntity.getLastContributor());

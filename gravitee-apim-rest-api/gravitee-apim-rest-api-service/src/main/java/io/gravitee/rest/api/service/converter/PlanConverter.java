@@ -112,6 +112,7 @@ public class PlanConverter {
     public UpdatePlanEntity toUpdatePlanEntity(PlanEntity planEntity) {
         UpdatePlanEntity updatePlanEntity = new UpdatePlanEntity();
         updatePlanEntity.setId(planEntity.getId());
+        updatePlanEntity.setCrossId(planEntity.getCrossId());
         updatePlanEntity.setName(planEntity.getName());
         updatePlanEntity.setDescription(planEntity.getDescription());
         updatePlanEntity.setValidation(planEntity.getValidation());
@@ -134,6 +135,7 @@ public class PlanConverter {
     public NewPlanEntity toNewPlanEntity(PlanEntity planEntity) {
         NewPlanEntity newPlanEntity = new NewPlanEntity();
         newPlanEntity.setId(planEntity.getId());
+        newPlanEntity.setCrossId(planEntity.getCrossId());
         newPlanEntity.setApi(planEntity.getApi());
         newPlanEntity.setName(planEntity.getName());
         newPlanEntity.setDescription(planEntity.getDescription());
