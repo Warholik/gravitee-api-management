@@ -125,7 +125,8 @@ public class ApiDuplicatorService_CreateWithDefinitionTest {
                 userService,
                 apiService,
                 apiConverter,
-                planConverter, pageConverter
+                planConverter,
+                pageConverter
             );
     }
 

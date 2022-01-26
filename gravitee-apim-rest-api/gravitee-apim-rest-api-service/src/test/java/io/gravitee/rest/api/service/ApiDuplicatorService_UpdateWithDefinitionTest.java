@@ -128,7 +128,8 @@ public class ApiDuplicatorService_UpdateWithDefinitionTest {
                 userService,
                 apiService,
                 apiConverter,
-                planConverter, pageConverter
+                planConverter,
+                pageConverter
             );
     }
 

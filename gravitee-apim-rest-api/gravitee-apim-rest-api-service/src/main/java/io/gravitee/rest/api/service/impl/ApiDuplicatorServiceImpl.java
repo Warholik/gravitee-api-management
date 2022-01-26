@@ -41,6 +41,7 @@ import io.gravitee.rest.api.service.common.UuidString;
 import io.gravitee.rest.api.service.converter.ApiConverter;
 import io.gravitee.rest.api.service.converter.PageConverter;
 import io.gravitee.rest.api.service.converter.PlanConverter;
+import io.gravitee.rest.api.service.exceptions.ApiNotFoundException;
 import io.gravitee.rest.api.service.exceptions.PageImportException;
 import io.gravitee.rest.api.service.exceptions.TechnicalManagementException;
 import io.gravitee.rest.api.service.exceptions.UserNotFoundException;
@@ -50,6 +51,7 @@ import io.gravitee.rest.api.service.spring.ImportConfiguration;
 import io.vertx.core.buffer.Buffer;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
@@ -680,53 +682,112 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
         }
     }
 
-    private void recalculatePromotedIds(String targetEnvId, JsonNode apiJsonNode) {
-        String apiId = apiJsonNode.hasNonNull("id") ? apiJsonNode.get("id").asText() : null;
-        String generatedApiId = UuidString.generateForEnvironment(targetEnvId, apiId);
+    public JsonNode handleApiDefinitionIds(JsonNode apiJsonNode, String environmentId) {
+        if (!apiJsonNode.hasNonNull("cross_id") || StringUtils.isEmpty(apiJsonNode.get("id").asText())) {
+            recalculatePromotedIds(environmentId, apiJsonNode);
+        } else {
+            findMatchAndMergeOrRecalculateIds(apiJsonNode, environmentId);
+        }
+        return generateEmptyIds(apiJsonNode);
+    }
 
+    private void findMatchAndMergeOrRecalculateIds(JsonNode apiJsonNode, String environmentId) {
+        String crossId = apiJsonNode.get("cross_id").asText();
+        try {
+            ApiEntity matchingApi = apiService.findByEnvironmentIdAndCrossId(environmentId, crossId);
+            mergeIds(apiJsonNode, matchingApi);
+        } catch (ApiNotFoundException e) {
+            LOGGER.info(
+                "No matching found for crossId [{}] on environment [{}], definition ids will be recalculated",
+                crossId,
+                environmentId
+            );
+            recalculatePromotedIds(environmentId, apiJsonNode);
+        }
+    }
+
+    private void mergeIds(JsonNode apiJsonNode, ApiEntity api) {
+        ((ObjectNode) apiJsonNode).put("id", api.getId());
+        mergePlanIds(api, getPlansNodes(apiJsonNode));
+        mergePageIds(api, getPagesNodes(apiJsonNode));
+    }
+
+    private void mergePlanIds(ApiEntity api, List<JsonNode> plansNodes) {
+        Map<String, PlanEntity> plansByCrossId = planService
+            .findByApi(api.getId())
+            .stream()
+            .collect(toMap(PlanEntity::getCrossId, Function.identity()));
+
+        plansNodes.forEach(
+            plan -> {
+                PlanEntity matchingPlan = plansByCrossId.get(plan.get("cross_id").asText());
+                ((ObjectNode) plan).put("id", matchingPlan.getId());
+            }
+        );
+    }
+
+    private void mergePageIds(ApiEntity api, List<JsonNode> pagesNodes) {
+        Map<String, PageEntity> pagesByCrossId = pageService
+            .findByApi(api.getId())
+            .stream()
+            .collect(toMap(PageEntity::getCrossId, Function.identity()));
+
+        pagesNodes.forEach(
+            page -> {
+                String nodeId = page.hasNonNull("id") ? page.get("id").asText() : null;
+                PageEntity matchingPage = pagesByCrossId.get(page.get("cross_id").asText());
+                ((ObjectNode) page).put("id", matchingPage.getId());
+
+                pagesNodes
+                    .stream()
+                    .filter(child -> isChildPageOf(child, nodeId))
+                    .forEach(child -> ((ObjectNode) child).put("parentId", matchingPage.getId()));
+            }
+        );
+    }
+
+    private void recalculatePromotedIds(String environmentId, JsonNode apiJsonNode) {
+        if (!apiJsonNode.hasNonNull("id") || StringUtils.isEmpty(apiJsonNode.get("id").asText())) {
+            ((ObjectNode) apiJsonNode).put("id", UuidString.generateRandom());
+        }
+        String apiId = apiJsonNode.get("id").asText();
+        String generatedApiId = UuidString.generateForEnvironment(environmentId, apiId);
         ((ObjectNode) apiJsonNode).put("id", generatedApiId);
+        recalculatePlanIds(getPlansNodes(apiJsonNode), environmentId, apiId);
+        recalculatePageIds(getPagesNodes(apiJsonNode), environmentId, apiId);
+    }
 
-        getPlansNodes(apiJsonNode)
+    private void recalculatePlanIds(List<JsonNode> plansNodes, String environmentId, String apiId) {
+        plansNodes
             .stream()
             .filter(plan -> plan.hasNonNull("id") && StringUtils.isNotEmpty(plan.get("id").asText()))
             .forEach(
                 plan -> {
-                    ((ObjectNode) plan).put("id", UuidString.generateForEnvironment(targetEnvId, apiId, plan.get("id").asText()));
+                    ((ObjectNode) plan).put("id", UuidString.generateForEnvironment(environmentId, apiId, plan.get("id").asText()));
                 }
             );
+    }
 
-        List<JsonNode> pagesNodes = getPagesNodes(apiJsonNode);
-
+    private void recalculatePageIds(List<JsonNode> pagesNodes, String environmentId, String apiId) {
         pagesNodes
             .stream()
             .filter(page -> page.hasNonNull("id") && StringUtils.isNotEmpty(page.get("id").asText()))
             .forEach(
                 page -> {
                     String pageId = page.get("id").asText();
-                    String generatedPageId = UuidString.generateForEnvironment(targetEnvId, apiId, page.get("id").asText());
+                    String generatedPageId = UuidString.generateForEnvironment(environmentId, apiId, page.get("id").asText());
                     ((ObjectNode) page).put("id", generatedPageId);
 
-                    pagesNodes.forEach(
-                        childNode -> {
-                            if (childNode.hasNonNull("parentId") && childNode.get("parentId").asText().equals(pageId)) {
-                                ((ObjectNode) childNode).put("parentId", generatedPageId);
-                            }
-                        }
-                    );
+                    pagesNodes
+                        .stream()
+                        .filter(child -> isChildPageOf(child, pageId))
+                        .forEach(child -> ((ObjectNode) child).put("parentId", generatedPageId));
                 }
             );
     }
 
-    public JsonNode handleApiDefinitionIds(JsonNode apiJsonNode, String environmentId) {
-        if (!apiJsonNode.hasNonNull("id") || StringUtils.isEmpty(apiJsonNode.get("id").asText())) {
-            ((ObjectNode) apiJsonNode).put("id", UuidString.generateRandom());
-        }
-
-        boolean isPromote = apiJsonNode.hasNonNull("environment_id") && !apiJsonNode.get("environment_id").asText().equals(environmentId);
-        if (isPromote) {
-            recalculatePromotedIds(environmentId, apiJsonNode);
-        }
-        return generateEmptyIds(apiJsonNode);
+    private boolean isChildPageOf(JsonNode pageNode, String pageId) {
+        return pageNode.hasNonNull("parentId") && pageNode.get("parent").asText().equals(pageId);
     }
 
     private JsonNode generateEmptyIds(JsonNode apiJsonNode) {
@@ -757,8 +818,7 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
         api.setCrossId(UuidString.generateRandom());
         apiService.update(api.getId(), apiConverter.toUpdateApiEntity(api));
         planService.findByApi(api.getId()).forEach(this::generateAndSaveCrossId);
-        pageService.search(new PageQuery.Builder().api(api.getId()).build(), false)
-                .forEach(this::generateAndSaveCrossId);
+        pageService.search(new PageQuery.Builder().api(api.getId()).build(), false).forEach(this::generateAndSaveCrossId);
     }
 
     private void generateAndSaveCrossId(PlanEntity plan) {

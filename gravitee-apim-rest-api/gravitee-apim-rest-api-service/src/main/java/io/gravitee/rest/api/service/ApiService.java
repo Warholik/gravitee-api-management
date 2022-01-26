@@ -41,6 +41,8 @@ import java.util.Set;
 public interface ApiService {
     ApiEntity findById(String apiId);
 
+    ApiEntity findByEnvironmentIdAndCrossId(String environment, String crossId);
+
     Set<ApiEntity> findAllByEnvironment(String environment);
 
     Set<ApiEntity> findByEnvironmentAndIdIn(String environment, Set<String> ids);

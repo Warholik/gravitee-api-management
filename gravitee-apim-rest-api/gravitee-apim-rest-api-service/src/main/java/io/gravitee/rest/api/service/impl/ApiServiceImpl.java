@@ -773,6 +773,11 @@ public class ApiServiceImpl extends AbstractService implements ApiService {
     }
 
     @Override
+    public ApiEntity findByEnvironmentIdAndCrossId(String environment, String crossId) {
+        return null;
+    }
+
+    @Override
     public PrimaryOwnerEntity getPrimaryOwner(String apiId) throws TechnicalManagementException {
         MembershipEntity primaryOwnerMemberEntity = membershipService.getPrimaryOwner(
             GraviteeContext.getCurrentOrganization(),
