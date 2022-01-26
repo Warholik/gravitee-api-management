@@ -35,6 +35,7 @@ import io.gravitee.rest.api.model.parameters.ParameterReferenceType;
 import io.gravitee.rest.api.model.plan.PlanQuery;
 import io.gravitee.rest.api.service.*;
 import io.gravitee.rest.api.service.common.UuidString;
+import io.gravitee.rest.api.service.converter.ApiConverter;
 import io.gravitee.rest.api.service.converter.PlanConverter;
 import io.gravitee.rest.api.service.exceptions.*;
 import io.gravitee.rest.api.service.processor.PlanSynchronizationProcessor;
@@ -78,6 +79,9 @@ public class PlanServiceImpl extends TransactionalService implements PlanService
 
     @Autowired
     private ApiService apiService;
+
+    @Autowired
+    private ApiConverter apiConverter;
 
     @Autowired
     private PlanConverter planConverter;
@@ -209,7 +213,7 @@ public class PlanServiceImpl extends TransactionalService implements PlanService
             plan = planRepository.create(plan);
 
             if (DefinitionVersion.V2.equals(DefinitionVersion.valueOfLabel(api.getGraviteeDefinitionVersion()))) {
-                UpdateApiEntity updateApi = ApiService.convert(api);
+                UpdateApiEntity updateApi = apiConverter.toUpdateApiEntity(api);
                 updateApi.addPlan(fillApiDefinitionPlan(new io.gravitee.definition.model.Plan(), plan, newPlan.getFlows()));
                 apiService.update(api.getId(), updateApi);
             }
@@ -243,9 +247,9 @@ public class PlanServiceImpl extends TransactionalService implements PlanService
         PlanEntity resultPlanEntity;
         try {
             findById(planEntity.getId());
-            resultPlanEntity = update(UpdatePlanEntity.from(planEntity));
+            resultPlanEntity = update(planConverter.toUpdatePlanEntity(planEntity));
         } catch (PlanNotFoundException npe) {
-            resultPlanEntity = create(NewPlanEntity.from(planEntity));
+            resultPlanEntity = create(planConverter.toNewPlanEntity(planEntity));
         }
         return resultPlanEntity;
     }
@@ -489,7 +493,7 @@ public class PlanServiceImpl extends TransactionalService implements PlanService
                     .filter(plan -> plan.getId().equals(updatedPlan.getId()))
                     .findFirst();
 
-                final UpdateApiEntity updateApi = ApiService.convert(api);
+                final UpdateApiEntity updateApi = apiConverter.toUpdateApiEntity(api);
                 if (existingPlan.isPresent()) {
                     // plan already exist, provide flows only if this is an import to override
                     fillApiDefinitionPlan(existingPlan.get(), updatedPlan, flows);

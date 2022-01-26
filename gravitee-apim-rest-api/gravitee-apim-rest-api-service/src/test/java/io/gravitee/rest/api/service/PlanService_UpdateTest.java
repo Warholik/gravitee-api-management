@@ -31,7 +31,9 @@ import io.gravitee.rest.api.model.PlanValidationType;
 import io.gravitee.rest.api.model.SubscriptionEntity;
 import io.gravitee.rest.api.model.UpdatePlanEntity;
 import io.gravitee.rest.api.model.api.ApiEntity;
+import io.gravitee.rest.api.model.api.UpdateApiEntity;
 import io.gravitee.rest.api.model.parameters.ParameterReferenceType;
+import io.gravitee.rest.api.service.converter.ApiConverter;
 import io.gravitee.rest.api.service.converter.PlanConverter;
 import io.gravitee.rest.api.service.exceptions.PlanGeneralConditionStatusException;
 import io.gravitee.rest.api.service.exceptions.PlanInvalidException;
@@ -93,6 +95,9 @@ public class PlanService_UpdateTest {
 
     @Mock
     private PlanConverter planConverter;
+
+    @Mock
+    private ApiConverter apiConverter;
 
     @Test
     public void shouldUpdate() throws TechnicalException {
@@ -239,6 +244,8 @@ public class PlanService_UpdateTest {
         when(updatePlan.getName()).thenReturn("NameUpdated");
         when(updatePlan.getFlows()).thenReturn(asList(new Flow()));
 
+        when(apiConverter.toUpdateApiEntity(apiV2)).thenReturn(new UpdateApiEntity());
+
         planService.update(updatePlan, true);
 
         verify(apiService)
@@ -294,6 +301,8 @@ public class PlanService_UpdateTest {
         unpublishedPage.setOrder(1);
         unpublishedPage.setType("MARKDOWN");
         unpublishedPage.setPublished(false);
+
+        when(apiConverter.toUpdateApiEntity(apiV2)).thenReturn(new UpdateApiEntity());
 
         planService.update(updatePlan, true);
 

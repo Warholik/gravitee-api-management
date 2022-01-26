@@ -50,6 +50,7 @@ import io.gravitee.rest.api.model.documentation.PageQuery;
 import io.gravitee.rest.api.service.*;
 import io.gravitee.rest.api.service.common.GraviteeContext;
 import io.gravitee.rest.api.service.common.UuidString;
+import io.gravitee.rest.api.service.converter.PageConverter;
 import io.gravitee.rest.api.service.exceptions.*;
 import io.gravitee.rest.api.service.impl.swagger.parser.OAIParser;
 import io.gravitee.rest.api.service.impl.swagger.transformer.SwaggerTransformer;
@@ -158,6 +159,9 @@ public class PageServiceImpl extends AbstractService implements PageService, App
 
     @Autowired
     private AccessControlService accessControlService;
+
+    @Autowired
+    private PageConverter pageConverter;
 
     private static Page convert(NewPageEntity newPageEntity) {
         Page page = new Page();
@@ -2650,9 +2654,10 @@ public class PageServiceImpl extends AbstractService implements PageService, App
 
             try {
                 findById(pageEntityToImport.getId());
-                createdOrUpdatedPage = update(pageEntityToImport.getId(), UpdatePageEntity.from(pageEntityToImport));
+                createdOrUpdatedPage = update(pageEntityToImport.getId(), pageConverter.toUpdatePageEntity(pageEntityToImport));
             } catch (PageNotFoundException e) {
-                createdOrUpdatedPage = createPage(apiId, NewPageEntity.from(pageEntityToImport), environmentId, pageEntityToImport.getId());
+                createdOrUpdatedPage =
+                    createPage(apiId, pageConverter.toNewPageEntity(pageEntityToImport), environmentId, pageEntityToImport.getId());
             }
 
             if (child.children != null && !child.children.isEmpty()) {
@@ -2672,7 +2677,7 @@ public class PageServiceImpl extends AbstractService implements PageService, App
             pageEntityToImport.setParentId(parentId);
 
             String newId = UuidString.generateForEnvironment(environmentId, apiId, pageEntityToImport.getId());
-            createPage(apiId, NewPageEntity.from(pageEntityToImport), environmentId, newId);
+            createPage(apiId, pageConverter.toNewPageEntity(pageEntityToImport), environmentId, newId);
 
             if (child.children != null && !child.children.isEmpty()) {
                 this.duplicateChildrenPages(apiId, newId, child.children, environmentId);
