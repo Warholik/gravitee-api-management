@@ -35,6 +35,7 @@ import io.gravitee.rest.api.model.api.ApiEntity;
 import io.gravitee.rest.api.model.permissions.SystemRole;
 import io.gravitee.rest.api.service.common.GraviteeContext;
 import io.gravitee.rest.api.service.converter.ApiConverter;
+import io.gravitee.rest.api.service.converter.PageConverter;
 import io.gravitee.rest.api.service.converter.PlanConverter;
 import io.gravitee.rest.api.service.impl.ApiDuplicatorServiceImpl;
 import io.gravitee.rest.api.service.jackson.filter.ApiPermissionFilter;
@@ -69,6 +70,9 @@ public class ApiDuplicatorService_ExportAsJsonTestSetup {
 
     @Mock
     protected PlanConverter planConverter;
+
+    @Mock
+    protected PageConverter pageConverter;
 
     @Spy
     protected ObjectMapper objectMapper = new GraviteeMapper();
@@ -123,7 +127,7 @@ public class ApiDuplicatorService_ExportAsJsonTestSetup {
                 userService,
                 apiService,
                 apiConverter,
-                planConverter
+                planConverter, pageConverter
             );
     }
 
