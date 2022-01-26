@@ -698,7 +698,7 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
             mergeIds(apiJsonNode, matchingApi);
         } catch (ApiNotFoundException e) {
             LOGGER.info(
-                "No matching found for crossId [{}] on environment [{}], definition ids will be recalculated",
+                "Could not find an API matching crossId [{}] on environment [{}], definition ids will be recalculated",
                 crossId,
                 environmentId
             );
@@ -775,7 +775,7 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
             .forEach(
                 page -> {
                     String pageId = page.get("id").asText();
-                    String generatedPageId = UuidString.generateForEnvironment(environmentId, apiId, page.get("id").asText());
+                    String generatedPageId = UuidString.generateForEnvironment(environmentId, apiId, pageId);
                     ((ObjectNode) page).put("id", generatedPageId);
 
                     pagesNodes
