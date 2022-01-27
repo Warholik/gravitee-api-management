@@ -95,7 +95,7 @@ public class ApiExportServiceImpl extends AbstractService implements ApiExportSe
             apiService.update(api.getId(), apiConverter.toUpdateApiEntity(api));
         }
         planService.findByApi(api.getId()).forEach(this::generateAndSaveCrossId);
-        pageService.search(new PageQuery.Builder().api(api.getId()).build(), false).forEach(this::generateAndSaveCrossId);
+        pageService.findByApi(api.getId()).forEach(this::generateAndSaveCrossId);
     }
 
     private void generateAndSaveCrossId(PlanEntity plan) {
