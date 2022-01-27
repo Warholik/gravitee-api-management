@@ -233,9 +233,7 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
     @Override
     public String exportAsJson(final String apiId, String exportVersion, String... filteredFields) {
         ApiEntity apiEntity = apiService.findById(apiId);
-        if (StringUtils.isEmpty(apiEntity.getCrossId())) {
-            generateAndSaveCrossId(apiEntity);
-        }
+        generateAndSaveCrossId(apiEntity);
         // set metadata for serialize process
         Map<String, Object> metadata = new HashMap<>();
         metadata.put(ApiSerializer.METADATA_EXPORT_VERSION, exportVersion);
@@ -815,19 +813,25 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
     }
 
     private void generateAndSaveCrossId(ApiEntity api) {
-        api.setCrossId(UuidString.generateRandom());
-        apiService.update(api.getId(), apiConverter.toUpdateApiEntity(api));
+        if (StringUtils.isEmpty(api.getCrossId())) {
+            api.setCrossId(UuidString.generateRandom());
+            apiService.update(api.getId(), apiConverter.toUpdateApiEntity(api));
+        }
         planService.findByApi(api.getId()).forEach(this::generateAndSaveCrossId);
         pageService.search(new PageQuery.Builder().api(api.getId()).build(), false).forEach(this::generateAndSaveCrossId);
     }
 
     private void generateAndSaveCrossId(PlanEntity plan) {
-        plan.setCrossId(UuidString.generateRandom());
-        planService.update(planConverter.toUpdatePlanEntity(plan));
+        if (StringUtils.isEmpty(plan.getCrossId())) {
+            plan.setCrossId(UuidString.generateRandom());
+            planService.update(planConverter.toUpdatePlanEntity(plan));
+        }
     }
 
     private void generateAndSaveCrossId(PageEntity page) {
-        page.setCrossId(UuidString.generateRandom());
-        pageService.update(page.getId(), pageConverter.toUpdatePageEntity(page));
+        if (StringUtils.isEmpty(page.getCrossId())) {
+            page.setCrossId(UuidString.generateRandom());
+            pageService.update(page.getId(), pageConverter.toUpdatePageEntity(page));
+        }
     }
 }
