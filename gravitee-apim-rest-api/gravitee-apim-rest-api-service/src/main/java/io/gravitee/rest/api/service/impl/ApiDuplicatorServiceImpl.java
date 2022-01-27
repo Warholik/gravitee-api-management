@@ -242,7 +242,7 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
 
         try {
             // Read the whole definition
-            JsonNode apiJsonNode = handleApiDefinitionIds(objectMapper.readTree(apiDefinition), environmentId);
+            JsonNode apiJsonNode = handleApiDefinitionIds(objectMapper.readTree(apiDefinition), environmentId, apiId);
 
             if (apiJsonNode.has("pages") && apiJsonNode.get("pages").isArray()) {
                 ArrayNode pagesDefinition = (ArrayNode) apiJsonNode.get("pages");
@@ -663,11 +663,25 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
     }
 
     public JsonNode handleApiDefinitionIds(JsonNode apiJsonNode, String environmentId) {
+        return handleApiDefinitionIds(apiJsonNode, environmentId, null);
+    }
+
+    public JsonNode handleApiDefinitionIds(JsonNode apiJsonNode, String environmentId, String apiId) {
+        /*
+         * In case of an update, if the API definition ID is the same as the resource ID targeted by the update,
+         * we don't apply any kind of ID transformation so that we don't break previous exports that don't hold
+         * a cross ID
+         */
+        if (apiJsonNode.hasNonNull("id") && apiJsonNode.get("id").asText().equals(apiId)) {
+            return generateEmptyIds(apiJsonNode);
+        }
+
         if (!apiJsonNode.hasNonNull("crossId") || StringUtils.isEmpty(apiJsonNode.get("crossId").asText())) {
             recalculatePromotedIds(environmentId, apiJsonNode);
         } else {
             findMatchAndMergeOrRecalculateIds(apiJsonNode, environmentId);
         }
+
         return generateEmptyIds(apiJsonNode);
     }
 
