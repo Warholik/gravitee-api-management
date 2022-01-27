@@ -681,7 +681,7 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
     }
 
     public JsonNode handleApiDefinitionIds(JsonNode apiJsonNode, String environmentId) {
-        if (!apiJsonNode.hasNonNull("cross_id") || StringUtils.isEmpty(apiJsonNode.get("id").asText())) {
+        if (!apiJsonNode.hasNonNull("crossId") || StringUtils.isEmpty(apiJsonNode.get("id").asText())) {
             recalculatePromotedIds(environmentId, apiJsonNode);
         } else {
             findMatchAndMergeOrRecalculateIds(apiJsonNode, environmentId);
@@ -690,7 +690,7 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
     }
 
     private void findMatchAndMergeOrRecalculateIds(JsonNode apiJsonNode, String environmentId) {
-        String crossId = apiJsonNode.get("cross_id").asText();
+        String crossId = apiJsonNode.get("crossId").asText();
         try {
             ApiEntity matchingApi = apiService.findByEnvironmentIdAndCrossId(environmentId, crossId);
             mergeIds(apiJsonNode, matchingApi);
@@ -718,7 +718,7 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
 
         plansNodes.forEach(
             plan -> {
-                PlanEntity matchingPlan = plansByCrossId.get(plan.get("cross_id").asText());
+                PlanEntity matchingPlan = plansByCrossId.get(plan.get("crossId").asText());
                 ((ObjectNode) plan).put("id", matchingPlan.getId());
             }
         );
@@ -732,13 +732,13 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
 
         pagesNodes.forEach(
             page -> {
-                String nodeId = page.hasNonNull("id") ? page.get("id").asText() : null;
-                PageEntity matchingPage = pagesByCrossId.get(page.get("cross_id").asText());
+                String pageId = page.hasNonNull("id") ? page.get("id").asText() : null;
+                PageEntity matchingPage = pagesByCrossId.get(page.get("crossId").asText());
                 ((ObjectNode) page).put("id", matchingPage.getId());
 
                 pagesNodes
                     .stream()
-                    .filter(child -> isChildPageOf(child, nodeId))
+                    .filter(child -> isChildPageOf(child, pageId))
                     .forEach(child -> ((ObjectNode) child).put("parentId", matchingPage.getId()));
             }
         );
@@ -785,7 +785,7 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
     }
 
     private boolean isChildPageOf(JsonNode pageNode, String pageId) {
-        return pageNode.hasNonNull("parentId") && pageNode.get("parent").asText().equals(pageId);
+        return pageNode.hasNonNull("parentId") && pageNode.get("parentId").asText().equals(pageId);
     }
 
     private JsonNode generateEmptyIds(JsonNode apiJsonNode) {
