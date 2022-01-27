@@ -780,7 +780,10 @@ public class ApiServiceImpl extends AbstractService implements ApiService {
                 .map(apiConverter::toApiEntity)
                 .orElseThrow(() -> new ApiNotFoundException("environment: " + environment + ", crossId: " + crossId));
         } catch (TechnicalException e) {
-            throw new TechnicalManagementException("An error occurred while finding API by environment " + environment + " and crossId " + crossId, e);
+            throw new TechnicalManagementException(
+                "An error occurred while finding API by environment " + environment + " and crossId " + crossId,
+                e
+            );
         }
     }
 

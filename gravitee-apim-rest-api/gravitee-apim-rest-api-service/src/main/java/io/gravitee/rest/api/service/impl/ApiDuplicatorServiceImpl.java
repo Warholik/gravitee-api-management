@@ -698,12 +698,15 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
             .stream()
             .collect(toMap(PlanEntity::getCrossId, Function.identity()));
 
-        plansNodes.forEach(
-            plan -> {
-                PlanEntity matchingPlan = plansByCrossId.get(plan.get("crossId").asText());
-                ((ObjectNode) plan).put("id", matchingPlan.getId());
-            }
-        );
+        plansNodes
+            .stream()
+            .filter(this::hasCrossId)
+            .forEach(
+                plan -> {
+                    PlanEntity matchingPlan = plansByCrossId.get(plan.get("crossId").asText());
+                    ((ObjectNode) plan).put("id", matchingPlan.getId());
+                }
+            );
     }
 
     private void mergePageIds(ApiEntity api, List<JsonNode> pagesNodes) {
@@ -712,18 +715,21 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
             .stream()
             .collect(toMap(PageEntity::getCrossId, Function.identity()));
 
-        pagesNodes.forEach(
-            page -> {
-                String pageId = page.hasNonNull("id") ? page.get("id").asText() : null;
-                PageEntity matchingPage = pagesByCrossId.get(page.get("crossId").asText());
-                ((ObjectNode) page).put("id", matchingPage.getId());
+        pagesNodes
+            .stream()
+            .filter(this::hasCrossId)
+            .forEach(
+                page -> {
+                    String pageId = page.hasNonNull("id") ? page.get("id").asText() : null;
+                    PageEntity matchingPage = pagesByCrossId.get(page.get("crossId").asText());
+                    ((ObjectNode) page).put("id", matchingPage.getId());
 
-                pagesNodes
-                    .stream()
-                    .filter(child -> isChildPageOf(child, pageId))
-                    .forEach(child -> ((ObjectNode) child).put("parentId", matchingPage.getId()));
-            }
-        );
+                    pagesNodes
+                        .stream()
+                        .filter(child -> isChildPageOf(child, pageId))
+                        .forEach(child -> ((ObjectNode) child).put("parentId", matchingPage.getId()));
+                }
+            );
     }
 
     private void recalculatePromotedIds(String environmentId, JsonNode apiJsonNode) {
@@ -766,8 +772,12 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
             );
     }
 
-    private boolean isChildPageOf(JsonNode pageNode, String pageId) {
-        return pageNode.hasNonNull("parentId") && pageNode.get("parentId").asText().equals(pageId);
+    private boolean isChildPageOf(JsonNode pageNode, String parentPageId) {
+        return pageNode.hasNonNull("parentId") && pageNode.get("parentId").asText().equals(parentPageId);
+    }
+
+    private boolean hasCrossId(JsonNode jsonNode) {
+        return jsonNode.hasNonNull("crossId") && StringUtils.isNotEmpty(jsonNode.get("crossId").asText());
     }
 
     private JsonNode generateEmptyIds(JsonNode apiJsonNode) {
