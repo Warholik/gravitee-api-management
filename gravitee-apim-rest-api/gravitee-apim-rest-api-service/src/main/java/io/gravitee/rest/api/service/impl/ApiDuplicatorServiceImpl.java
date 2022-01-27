@@ -663,7 +663,7 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
     }
 
     public JsonNode handleApiDefinitionIds(JsonNode apiJsonNode, String environmentId) {
-        if (!apiJsonNode.hasNonNull("crossId") || StringUtils.isEmpty(apiJsonNode.get("id").asText())) {
+        if (!apiJsonNode.hasNonNull("crossId") || StringUtils.isEmpty(apiJsonNode.get("crossId").asText())) {
             recalculatePromotedIds(environmentId, apiJsonNode);
         } else {
             findMatchAndMergeOrRecalculateIds(apiJsonNode, environmentId);
@@ -705,7 +705,9 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
             .forEach(
                 plan -> {
                     PlanEntity matchingPlan = plansByCrossId.get(plan.get("crossId").asText());
-                    ((ObjectNode) plan).put("id", matchingPlan.getId());
+                    if (matchingPlan != null) {
+                        ((ObjectNode) plan).put("id", matchingPlan.getId());
+                    }
                 }
             );
     }
@@ -724,12 +726,14 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
                 page -> {
                     String pageId = page.hasNonNull("id") ? page.get("id").asText() : null;
                     PageEntity matchingPage = pagesByCrossId.get(page.get("crossId").asText());
-                    ((ObjectNode) page).put("id", matchingPage.getId());
+                    if (matchingPage != null) {
+                        ((ObjectNode) page).put("id", matchingPage.getId());
 
-                    pagesNodes
-                        .stream()
-                        .filter(child -> isChildPageOf(child, pageId))
-                        .forEach(child -> ((ObjectNode) child).put("parentId", matchingPage.getId()));
+                        pagesNodes
+                            .stream()
+                            .filter(child -> isChildPageOf(child, pageId))
+                            .forEach(child -> ((ObjectNode) child).put("parentId", matchingPage.getId()));
+                    }
                 }
             );
     }
