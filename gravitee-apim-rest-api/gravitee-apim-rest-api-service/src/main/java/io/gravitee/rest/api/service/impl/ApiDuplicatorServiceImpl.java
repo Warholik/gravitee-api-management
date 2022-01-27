@@ -696,6 +696,7 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
         Map<String, PlanEntity> plansByCrossId = planService
             .findByApi(api.getId())
             .stream()
+            .filter(plan -> plan.getCrossId() != null)
             .collect(toMap(PlanEntity::getCrossId, Function.identity()));
 
         plansNodes
@@ -713,6 +714,7 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
         Map<String, PageEntity> pagesByCrossId = pageService
             .findByApi(api.getId())
             .stream()
+            .filter(page -> page.getCrossId() != null)
             .collect(toMap(PageEntity::getCrossId, Function.identity()));
 
         pagesNodes

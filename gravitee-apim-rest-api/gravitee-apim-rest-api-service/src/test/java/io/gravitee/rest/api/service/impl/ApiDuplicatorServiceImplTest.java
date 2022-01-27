@@ -93,15 +93,14 @@ public class ApiDuplicatorServiceImplTest {
         ObjectNode apiDefinition = mapper.createObjectNode().put("id", "api-id-1").put("crossId", "api-cross-id");
 
         apiDefinition.set(
-          "plans",
-          mapper
-            .createArrayNode()
-            .add(mapper.createObjectNode().put("id", "plan-id-1").put("crossId", "plan-cross-id-1"))
-            .add(mapper.createObjectNode().put("id", "plan-id-2").put("crossId", "plan-cross-id-2"))
+            "plans",
+            mapper
+                .createArrayNode()
+                .add(mapper.createObjectNode().put("id", "plan-id-1").put("crossId", "plan-cross-id-1"))
+                .add(mapper.createObjectNode().put("id", "plan-id-2").put("crossId", "plan-cross-id-2"))
         );
 
-        when(apiService.findByEnvironmentIdAndCrossId("uat", "api-cross-id"))
-          .thenThrow(new ApiNotFoundException("No Match Found"));
+        when(apiService.findByEnvironmentIdAndCrossId("uat", "api-cross-id")).thenThrow(new ApiNotFoundException("No Match Found"));
 
         JsonNode newApiDefinition = apiDuplicatorService.handleApiDefinitionIds(apiDefinition, "uat");
 
