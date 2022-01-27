@@ -981,7 +981,7 @@ public class PageServiceImpl extends AbstractService implements PageService, App
 
     @Override
     public PageEntity create(final String apiId, final PageEntity pageEntity, String environmentId) {
-        final NewPageEntity newPageEntity = convert(pageEntity);
+        final NewPageEntity newPageEntity = pageConverter.toNewPageEntity(pageEntity);
         newPageEntity.setLastContributor(null);
         return createPage(apiId, newPageEntity, environmentId);
     }
@@ -2166,24 +2166,6 @@ public class PageServiceImpl extends AbstractService implements PageService, App
             logger.error("An error occurs while trying to import a directory", ex);
             throw new TechnicalManagementException("An error occurs while trying import a directory", ex);
         }
-    }
-
-    private NewPageEntity convert(final PageEntity pageEntity) {
-        final NewPageEntity newPageEntity = new NewPageEntity();
-        newPageEntity.setName(pageEntity.getName());
-        newPageEntity.setOrder(pageEntity.getOrder());
-        newPageEntity.setPublished(pageEntity.isPublished());
-        newPageEntity.setVisibility(pageEntity.getVisibility());
-        newPageEntity.setSource(pageEntity.getSource());
-        newPageEntity.setType(PageType.valueOf(pageEntity.getType()));
-        newPageEntity.setParentId(pageEntity.getParentId());
-        newPageEntity.setHomepage(pageEntity.isHomepage());
-        newPageEntity.setContent(pageEntity.getContent());
-        newPageEntity.setConfiguration(pageEntity.getConfiguration());
-        newPageEntity.setExcludedAccessControls(pageEntity.isExcludedAccessControls());
-        newPageEntity.setAccessControls(pageEntity.getAccessControls());
-        newPageEntity.setLastContributor(pageEntity.getLastContributor());
-        return newPageEntity;
     }
 
     private List<PageEntity> convert(List<Page> pages) {

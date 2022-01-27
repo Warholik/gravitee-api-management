@@ -15,21 +15,10 @@
  */
 package io.gravitee.rest.api.service.converter;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.gravitee.definition.model.DefinitionVersion;
-import io.gravitee.definition.model.Rule;
-import io.gravitee.definition.model.flow.Flow;
-import io.gravitee.repository.management.model.Plan;
-import io.gravitee.rest.api.model.*;
-import io.gravitee.rest.api.model.api.ApiEntity;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.gravitee.rest.api.model.NewPageEntity;
+import io.gravitee.rest.api.model.PageEntity;
+import io.gravitee.rest.api.model.PageType;
+import io.gravitee.rest.api.model.UpdatePageEntity;
 import org.springframework.stereotype.Component;
 
 /**
@@ -72,6 +61,7 @@ public class PageConverter {
         newPage.setSource(pageEntity.getSource());
         newPage.setType(PageType.valueOf(pageEntity.getType()));
         newPage.setAttachedMedia(pageEntity.getAttachedMedia());
+        newPage.setVisibility(pageEntity.getVisibility());
         return newPage;
     }
 }
