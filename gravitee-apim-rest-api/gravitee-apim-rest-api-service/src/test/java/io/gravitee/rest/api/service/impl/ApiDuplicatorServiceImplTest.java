@@ -31,6 +31,7 @@ import io.gravitee.rest.api.model.api.ApiEntity;
 import io.gravitee.rest.api.service.ApiService;
 import io.gravitee.rest.api.service.PageService;
 import io.gravitee.rest.api.service.PlanService;
+import io.gravitee.rest.api.service.exceptions.ApiNotFoundException;
 import io.gravitee.rest.api.service.jackson.filter.ApiPermissionFilter;
 import java.util.Collections;
 import java.util.List;
@@ -85,6 +86,28 @@ public class ApiDuplicatorServiceImplTest {
         assertEquals("e0a6482a-b8a7-3db4-a1b7-d36a462a9e38", newApiDefinition.get("id").asText());
         assertEquals("393ed51c-285d-3097-82eb-2bff2903dc62", newApiDefinition.get("plans").get(0).get("id").asText());
         assertEquals("bff87514-39d4-331b-a531-73c021ecf627", newApiDefinition.get("plans").get(1).get("id").asText());
+    }
+
+    @Test
+    public void handleApiDefinitionIds_WithNoCrossId_AndNoMatchingApi_should_recalculate_api_id_and_plans_id() {
+        ObjectNode apiDefinition = mapper.createObjectNode().put("id", "api-id-1").put("crossId", "api-cross-id");
+
+        apiDefinition.set(
+          "plans",
+          mapper
+            .createArrayNode()
+            .add(mapper.createObjectNode().put("id", "plan-id-1").put("crossId", "plan-cross-id-1"))
+            .add(mapper.createObjectNode().put("id", "plan-id-2").put("crossId", "plan-cross-id-2"))
+        );
+
+        when(apiService.findByEnvironmentIdAndCrossId("uat", "api-cross-id"))
+          .thenThrow(new ApiNotFoundException("No Match Found"));
+
+        JsonNode newApiDefinition = apiDuplicatorService.handleApiDefinitionIds(apiDefinition, "uat");
+
+        assertEquals("6bcde800-d5ae-3215-8413-cae196f9edfc", newApiDefinition.get("id").asText());
+        assertEquals("5025bd5d-b1a5-35f5-813b-65bb902aa4e7", newApiDefinition.get("plans").get(0).get("id").asText());
+        assertEquals("a4c0e8d8-ea8b-341b-9f7f-3ed456e77689", newApiDefinition.get("plans").get(1).get("id").asText());
     }
 
     @Test
