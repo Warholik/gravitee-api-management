@@ -51,6 +51,7 @@ public class PlanConverter {
         PlanEntity entity = new PlanEntity();
 
         entity.setId(plan.getId());
+        entity.setCrossId(plan.getCrossId());
         entity.setName(plan.getName());
         entity.setDescription(plan.getDescription());
         entity.setApi(plan.getApi());
