@@ -773,12 +773,9 @@ public class ApiServiceImpl extends AbstractService implements ApiService {
     }
 
     @Override
-    public ApiEntity findByEnvironmentIdAndCrossId(String environment, String crossId) {
+    public Optional<ApiEntity> findByEnvironmentIdAndCrossId(String environment, String crossId) {
         try {
-            return apiRepository
-                .findByEnvironmentIdAndCrossId(environment, crossId)
-                .map(apiConverter::toApiEntity)
-                .orElseThrow(() -> new ApiNotFoundException("environment: " + environment + ", crossId: " + crossId));
+            return apiRepository.findByEnvironmentIdAndCrossId(environment, crossId).map(apiConverter::toApiEntity);
         } catch (TechnicalException e) {
             throw new TechnicalManagementException(
                 "An error occurred while finding API by environment " + environment + " and crossId " + crossId,

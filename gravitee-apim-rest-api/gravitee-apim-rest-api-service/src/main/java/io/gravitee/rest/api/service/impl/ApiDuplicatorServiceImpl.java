@@ -673,17 +673,9 @@ public class ApiDuplicatorServiceImpl extends AbstractService implements ApiDupl
 
     private void findMatchAndMergeOrRecalculateIds(JsonNode apiJsonNode, String environmentId) {
         String crossId = apiJsonNode.get("crossId").asText();
-        try {
-            ApiEntity matchingApi = apiService.findByEnvironmentIdAndCrossId(environmentId, crossId);
-            mergeIds(apiJsonNode, matchingApi);
-        } catch (ApiNotFoundException e) {
-            LOGGER.info(
-                "Could not find an API matching crossId [{}] on environment [{}], definition ids will be recalculated",
-                crossId,
-                environmentId
-            );
-            recalculatePromotedIds(environmentId, apiJsonNode);
-        }
+        apiService
+            .findByEnvironmentIdAndCrossId(environmentId, crossId)
+            .ifPresentOrElse(matchingApi -> mergeIds(apiJsonNode, matchingApi), () -> recalculatePromotedIds(environmentId, apiJsonNode));
     }
 
     private void mergeIds(JsonNode apiJsonNode, ApiEntity api) {

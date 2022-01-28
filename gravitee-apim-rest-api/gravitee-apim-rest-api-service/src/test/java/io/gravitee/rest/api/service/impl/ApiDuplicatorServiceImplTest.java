@@ -35,6 +35,7 @@ import io.gravitee.rest.api.service.exceptions.ApiNotFoundException;
 import io.gravitee.rest.api.service.jackson.filter.ApiPermissionFilter;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -100,7 +101,7 @@ public class ApiDuplicatorServiceImplTest {
                 .add(mapper.createObjectNode().put("id", "plan-id-2").put("crossId", "plan-cross-id-2"))
         );
 
-        when(apiService.findByEnvironmentIdAndCrossId("uat", "api-cross-id")).thenThrow(new ApiNotFoundException("No Match Found"));
+        when(apiService.findByEnvironmentIdAndCrossId("uat", "api-cross-id")).thenReturn(Optional.empty());
 
         JsonNode newApiDefinition = apiDuplicatorService.handleApiDefinitionIds(apiDefinition, "uat");
 
@@ -133,7 +134,7 @@ public class ApiDuplicatorServiceImplTest {
         secondMatchingPlan.setCrossId("plan-cross-id-2");
         secondMatchingPlan.setId("plan-id-2");
 
-        when(apiService.findByEnvironmentIdAndCrossId("dev", "api-cross-id")).thenReturn(matchingApi);
+        when(apiService.findByEnvironmentIdAndCrossId("dev", "api-cross-id")).thenReturn(Optional.of(matchingApi));
         when(planService.findByApi("api-id-1")).thenReturn(Set.of(firstMatchingPlan, secondMatchingPlan));
 
         JsonNode newApiDefinition = apiDuplicatorService.handleApiDefinitionIds(apiDefinition, "dev");
@@ -178,7 +179,7 @@ public class ApiDuplicatorServiceImplTest {
         page.setId("page-id");
         page.setCrossId("page-cross-id");
 
-        when(apiService.findByEnvironmentIdAndCrossId("dev", "api-cross-id")).thenReturn(matchingApi);
+        when(apiService.findByEnvironmentIdAndCrossId("dev", "api-cross-id")).thenReturn(Optional.of(matchingApi));
         when(pageService.findByApi("api-id-1")).thenReturn(List.of(rootFolder, nestedFolder, page));
 
         JsonNode newApiDefinition = apiDuplicatorService.handleApiDefinitionIds(apiDefinition, "dev");
@@ -250,7 +251,7 @@ public class ApiDuplicatorServiceImplTest {
         matchingPage.setId("page-id-1");
         matchingPage.setCrossId("page-cross-id");
 
-        when(apiService.findByEnvironmentIdAndCrossId("dev", "api-cross-id")).thenReturn(matchingApi);
+        when(apiService.findByEnvironmentIdAndCrossId("dev", "api-cross-id")).thenReturn(Optional.of(matchingApi));
         when(pageService.findByApi("api-id-1")).thenReturn(List.of(matchingPage));
         when(planService.findByApi("api-id-1")).thenReturn(Set.of(matchingPlan));
 

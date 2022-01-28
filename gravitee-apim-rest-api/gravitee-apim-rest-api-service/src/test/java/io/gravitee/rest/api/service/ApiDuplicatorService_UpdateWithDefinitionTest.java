@@ -531,7 +531,7 @@ public class ApiDuplicatorService_UpdateWithDefinitionTest {
         plan4.setId("plan-id4");
 
         when(planService.findByApi(apiEntity.getId())).thenReturn(Set.of(plan1, plan2, plan3, plan4));
-        when(apiService.findByEnvironmentIdAndCrossId("DEFAULT", "api-cross-id")).thenReturn(apiEntity);
+        when(apiService.findByEnvironmentIdAndCrossId("DEFAULT", "api-cross-id")).thenReturn(Optional.of(apiEntity));
 
         apiDuplicatorService.updateWithImportedDefinition(
             apiEntity.getId(),
@@ -566,7 +566,7 @@ public class ApiDuplicatorService_UpdateWithDefinitionTest {
         ApiEntity apiEntity = prepareUpdateImportApiWithMembers(admin, user);
         apiEntity.setCrossId("api-cross-id");
 
-        when(apiService.findByEnvironmentIdAndCrossId("DEFAULT", "api-cross-id")).thenReturn(apiEntity);
+        when(apiService.findByEnvironmentIdAndCrossId("DEFAULT", "api-cross-id")).thenReturn(Optional.of(apiEntity));
 
         // plan1 had a description and a name before import
         // imported definition contains a new name, but doesn't specify any description
@@ -611,7 +611,7 @@ public class ApiDuplicatorService_UpdateWithDefinitionTest {
         apiPlan.setId("plan-id1");
         apiPlan.setCrossId("plan-cross-id-1");
 
-        when(apiService.findByEnvironmentIdAndCrossId("DEFAULT", "api-cross-id")).thenReturn(api);
+        when(apiService.findByEnvironmentIdAndCrossId("DEFAULT", "api-cross-id")).thenReturn(Optional.of(api));
         when(planService.findByApi("id-api")).thenReturn(Set.of(apiPlan));
 
         when(planService.anyPlanMismatchWithApi(anyList(), eq("id-api"))).thenReturn(true);
